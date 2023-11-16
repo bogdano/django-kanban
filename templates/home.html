@@ -4,6 +4,7 @@
 
 {% block content %}
 {% if user.is_authenticated %}
+Hi {{ user.username }}! Your role is {{ user.role }} .
 <p>Hi {{ user.username }}!</p>
 <p><a href="{% url 'logout' %}">Log Out</a></p>
 {% else %}
