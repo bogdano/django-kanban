@@ -40,16 +40,34 @@ class BoardList(models.Model):
 
     def __str__(self):
         return f"{self.get_list_type_display()} - {self.name}"
-
+    
 class Activity(models.Model):
+    # different types of actions which can be taken on an item
+    ACTION_CHOICES = [
+        ('CREATED', 'Created'),
+        ('UPDATED', 'Updated'),
+        ('MOVED', 'Moved'),
+        ('DELETED', 'Deleted'),
+    ]
     # activity records which user moved, updated, or deleted an item
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     # activity records which item was acted upon
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    # empty string which will store the name of the board from which an item was moved
+    source_board = models.CharField(max_length=200)
     # empty string which will store the name of the board to which an item was moved
     destination_board = models.CharField(max_length=200)
     # automatic timestamp for when activity was created
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    # the string representation of an Activity object, based on the action taken
     def __str__(self):
-        return f"{self.user} moved {self.item} to {self.destination_board}"
+        match self.action:
+            case 'MOVED':
+                return f"{self.user.username} moved {self.item.content} from {self.source_board} to {self.destination_board} at {self.timestamp}"
+            case 'CREATED':
+                return f"{self.user.username} created item {self.item.content} at {self.timestamp}"
+            case 'UPDATED':
+                return f"{self.user.username} updated item {self.item.content} at {self.timestamp}"
+            case 'DELETED':
+                return f"{self.user.username} deleted an item at {self.timestamp}"
