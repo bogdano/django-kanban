@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.conf import settings
 
 # the base Item model, for all board items
 class Item(models.Model):
@@ -10,11 +11,11 @@ class Item(models.Model):
     # automatic timestamp for when item was created
     date_added = models.DateTimeField(auto_now_add=True)  
     # an author field which is a foreign key to the User model which Terrin created
-    author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='author')
     # an automatic timestamp for when item was last updated by a user (will take care of this in views.py)
     last_updated = models.DateTimeField(auto_now=True)
     # a foreign key to the User model which Terrin created, updated each time an item is moved to a new board
-    updated_by = models.ForeignKey('auth.User', related_name='updated_by', null=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by')
 
     def __str__(self):
         return self.content
@@ -50,7 +51,7 @@ class Activity(models.Model):
         ('DELETED', 'Deleted'),
     ]
     # activity records which user moved, updated, or deleted an item
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # activity records which item was acted upon
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     # empty string which will store the name of the board from which an item was moved
