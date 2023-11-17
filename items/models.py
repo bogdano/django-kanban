@@ -16,6 +16,8 @@ class Item(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     # a foreign key to the User model which Terrin created, updated each time an item is moved to a new board
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by')
+    # an integer to store the position of an item in a boardlist, updated each time an item is moved to a new board
+    order = models.IntegerField(default=0)
 
     def __str__(self):
         return self.content
@@ -50,6 +52,7 @@ class Activity(models.Model):
         ('MOVED', 'Moved'),
         ('DELETED', 'Deleted'),
     ]
+    action = models.CharField(max_length=7, choices=ACTION_CHOICES, default='CREATED')
     # activity records which user moved, updated, or deleted an item
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # activity records which item was acted upon
