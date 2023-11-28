@@ -5,13 +5,13 @@ from django.conf import settings
 # the base Item model, for all board items
 class Item(models.Model):
     # text content
-    content = models.CharField(max_length=200)
+    content = models.CharField(max_length=500)
     # boolean to indicate if item is checked off (we can use this with HTML checkboxes)
     checked = models.BooleanField(default=False)
     # automatic timestamp for when item was created
     date_added = models.DateTimeField(auto_now_add=True)  
     # an author field which is a foreign key to the User model which Terrin created
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='author')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='author')
     # an automatic timestamp for when item was last updated by a user (will take care of this in views.py)
     last_updated = models.DateTimeField(auto_now=True)
     # a foreign key to the User model which Terrin created, updated each time an item is moved to a new board
