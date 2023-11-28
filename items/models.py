@@ -5,7 +5,7 @@ from django.conf import settings
 # the base Item model, for all board items
 class Item(models.Model):
     # text content
-    content = models.CharField(max_length=500)
+    content = models.CharField(max_length=500, blank=False)
     # boolean to indicate if item is checked off (we can use this with HTML checkboxes)
     checked = models.BooleanField(default=False)
     # automatic timestamp for when item was created
@@ -15,7 +15,7 @@ class Item(models.Model):
     # an automatic timestamp for when item was last updated by a user (will take care of this in views.py)
     last_updated = models.DateTimeField(auto_now=True)
     # a foreign key to the User model which Terrin created, updated each time an item is moved to a new board
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by', null=True)
     # an integer to store the position of an item in a boardlist, updated each time an item is moved to a new board
     order = models.IntegerField(default=0)
 

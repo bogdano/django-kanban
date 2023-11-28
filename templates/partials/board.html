@@ -1,0 +1,87 @@
+<div class="kanban-board" id="kanban-board">
+
+  <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#ideas-list" hx-swap="outerHTML" role="group">
+    <input type="text" name="content" placeholder="New item" required>
+    <input type="submit" value="Add">
+  </form>
+
+  <div class="kanban-list" id="ideas-list">
+    <h3>Ideas</h3>
+    {% for item in ideas_items %}
+      <div class="kanban-item" id="item-{{ item.id }}">
+        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+        <span>{{ item.content }}</span>
+        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+      </div>
+    {% empty %}
+      <p>No items in Ideas.</p>
+    {% endfor %}
+  </div>
+  
+  <div class="kanban-list" id="todo-list">
+    <h3>Todo</h3>
+    {% for item in todo_items %}
+      <div class="kanban-item" id="item-{{ item.id }}">
+        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+        <span>{{ item.content }}</span>
+        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+      </div>
+    {% empty %}
+      <p>No items in Todo.</p>
+    {% endfor %}
+  </div>
+
+  <div class="kanban-list" id="doing-list">
+    <h3>Doing</h3>
+    {% for item in doing_items %}
+      <div class="kanban-item" id="item-{{ item.id }}">
+        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+        <span>{{ item.content }}</span>
+        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+      </div>
+    {% empty %}
+      <p>No items in Doing.</p>
+    {% endfor %}
+  </div>
+
+  <div class="kanban-list" id="done-list">
+    <h3>Done</h3>
+    {% for item in done_items %}
+      <div class="kanban-item" id="item-{{ item.id }}">
+        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+        <span>{{ item.content }}</span>
+        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+      </div>
+    {% empty %}
+      <p>No items in Done.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="activities-board" id="activities-board">
+  <!-- ADD ACTIVIITES SECTION AFTER REFACTORING VIEWS.PY -->
+</div>
+
+<script>
+  htmx.logAll();
+
+  new Sortable(document.getElementById('ideas-list'), {
+    group: 'shared', // or any other configuration
+    // additional options
+  });
+
+  new Sortable(document.getElementById('todo-list'), {
+    group: 'shared', // or any other configuration
+    // additional options
+  });
+
+  new Sortable(document.getElementById('doing-list'), {
+    group: 'shared', // or any other configuration
+    // additional options
+  });
+
+  new Sortable(document.getElementById('done-list'), {
+    group: 'shared', // or any other configuration
+    // additional options
+  });
+</script>

@@ -1,17 +1,19 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
+{% load static %}
 <html>
+  <head>
+    <title>Do these things:</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <script src="https://unpkg.com/htmx.org"></script>
 
-<head>
-    <meta charset="utf-8">
-    <title>{% block title %}Django Kanban{% endblock title %}</title>
-</head>
-
-<body>
-    <main>
+    <script src="http://SortableJS.github.io/Sortable/Sortable.js"></script>
+  </head>
+  <body hx-boost="true" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <main class="container-fluid">
         {% block content %}
         {% endblock content %}
     </main>
-</body>
-
+  </body>
 </html>
