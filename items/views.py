@@ -46,7 +46,7 @@ def create_item(request):
     # Get or create the 'IDEAS' board list
     ideas_list, created = BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})
     # Add the item to the board list
-    order = BoardList.objects.get(list_type='IDEAS').items.all().count()
+    order = BoardList.objects.get(list_type='IDEAS').items.all().count()+1
     item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order)
     ideas_list.items.add(item)
 
@@ -64,10 +64,9 @@ def delete_item(request, pk):
     item.delete()
     return JsonResponse({'message': 'deleted successfully'})
 
-def update_item_position(request):
+def update_item_position(request, pk):
   if request.method == 'POST':
-    item_id = request.POST.get('pk')
-    item = Item.objects.get(pk=item_id)
+    item = Item.objects.get(pk=pk)
 
     new_position = int(request.POST.get('new_position'))
     old_position = item.order
@@ -85,9 +84,9 @@ def update_item_position(request):
       item_to_shift.order += 1
       item_to_shift.save()
 
-    item.boardlist.get().delete()
-    BoardList.objects.create(item=item, list_type=new_board)
+    BoardList.objects.get(list_type=old_board).items.remove(item)
     item.order = new_position
+    BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
       item.checked = True
     item.save()
@@ -95,7 +94,7 @@ def update_item_position(request):
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
     context = {
       'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
-      'todo_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
       'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
       'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
     }

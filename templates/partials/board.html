@@ -1,87 +1,105 @@
-<div class="kanban-board" id="kanban-board">
+<div class="kanban-board" id="kanban-board" hx-trigger="updateItem" hx-swap="innerHTML">
 
-  <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#ideas-list" hx-swap="outerHTML" role="group">
-    <input type="text" name="content" placeholder="New item" required>
+  <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#ideas-list" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
+    <input type="text" id="add-item-input" name="content" placeholder="New item" required>
     <input type="submit" value="Add">
   </form>
 
-  <div class="kanban-list" id="ideas-list">
+  <div class="kanban-list" id="ideas-list" data-board-type="IDEAS">
     <h3>Ideas</h3>
     {% for item in ideas_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
         <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+        <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
-      <p>No items in Ideas.</p>
+      <p class="undraggable">No items in Ideas.</p>
     {% endfor %}
   </div>
-  
-  <div class="kanban-list" id="todo-list">
+
+  <div class="kanban-list" id="todo-list" data-board-type="TODO">
     <h3>Todo</h3>
     {% for item in todo_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
         <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+        <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
-      <p>No items in Todo.</p>
+      <p class="undraggable">No items in Todo.</p>
     {% endfor %}
   </div>
 
-  <div class="kanban-list" id="doing-list">
+  <div class="kanban-list" id="doing-list" data-board-type="DOING">
     <h3>Doing</h3>
     {% for item in doing_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
         <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+        <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
-      <p>No items in Doing.</p>
+      <p class="undraggable">No items in Doing.</p>
     {% endfor %}
   </div>
 
-  <div class="kanban-list" id="done-list">
+  <div class="kanban-list" id="done-list" data-board-type="DONE">
     <h3>Done</h3>
     {% for item in done_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
         <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
+        <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
-      <p>No items in Done.</p>
+      <p class="undraggable">No items in Done.</p>
     {% endfor %}
   </div>
 </div>
 
-<div class="activities-board" id="activities-board">
-  <!-- ADD ACTIVIITES SECTION AFTER REFACTORING VIEWS.PY -->
-</div>
-
 <script>
-  htmx.logAll();
+  // htmx.logAll();
 
-  new Sortable(document.getElementById('ideas-list'), {
-    group: 'shared', // or any other configuration
-    // additional options
+  document.querySelectorAll('.kanban-list').forEach(function(list) {
+    new Sortable(list, {
+      group: 'shared',
+      filter: '.undraggable', // 'undraggable' class is not draggable
+      onEnd: function (evt) {
+          var item = evt.item
+          var newBoardType = evt.to.dataset.boardType  // Assuming each list has a data-board-type attribute
+          var oldBoardType = evt.from.dataset.boardType
+          var newIndex = evt.newIndex
+          // log number of siblings
+          count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
+          // create array of size count with numbers from count to 1
+          var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
+          updateItemPosition(item, newBoardType, oldBoardType, arr[newIndex-1])
+        }
+    });
   });
+  
+  function updateItemPosition(item, newBoardType, oldBoardType, newIndex) {
+    const itemId = item.id.split('-')[1];
+    console.log('ID', itemId)
+    // Update the HTMX trigger with the correct POST URL and values
+    console.log('#hx-trigger-' + newBoardType)
+    const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType)
+    console.log('THIS IS THE NEW INDEX RN:', newIndex)
+    console.log('htmxTrigger before', htmxTrigger)
+    htmxTrigger.setAttribute('hx-vals', '{"new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType + '"}');
+    console.log('htmxTrigger after', htmxTrigger)
+    // Trigger the HTMX request by simulating a click
+    htmx.trigger(htmxTrigger, 'click');
+  }
 
-  new Sortable(document.getElementById('todo-list'), {
-    group: 'shared', // or any other configuration
-    // additional options
-  });
+  function focusForm() {
+    document.getElementById('add-item-input').select();
+  }
+  
 
-  new Sortable(document.getElementById('doing-list'), {
-    group: 'shared', // or any other configuration
-    // additional options
-  });
-
-  new Sortable(document.getElementById('done-list'), {
-    group: 'shared', // or any other configuration
-    // additional options
-  });
 </script>
