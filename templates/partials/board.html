@@ -10,9 +10,9 @@
     {% for item in ideas_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.order }} </span>
+        <span>{{ item.content }}, {{ item.id }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+        <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
       <p class="undraggable">No items in Ideas.</p>
@@ -24,23 +24,23 @@
     {% for item in todo_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.order }} </span>
+        <span>{{ item.content }}, {{ item.id }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+        <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
       <p class="undraggable">No items in Todo.</p>
     {% endfor %}
   </div>
-
+  
   <div class="kanban-list" id="doing-list" data-board-type="DOING">
     <h3>Doing</h3>
     {% for item in doing_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.order }} </span>
+        <span>{{ item.content }}, {{ item.id }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+        <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
       <p class="undraggable">No items in Doing.</p>
@@ -52,9 +52,9 @@
     {% for item in done_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.order }} </span>
+        <span>{{ item.content }}, {{ item.id }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/{{ item.id }}/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+        <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
       </div>
     {% empty %}
       <p class="undraggable">No items in Done.</p>
@@ -69,8 +69,15 @@
     new Sortable(list, {
       group: 'shared',
       filter: '.undraggable', // 'undraggable' class is not draggable
+      onMove: function (evt) {
+        // Prevent placing items after the undraggable element
+        if (evt.related.className.includes('undraggable')) {
+            return false;
+        }
+      },
       onEnd: function (evt) {
           var item = evt.item
+          var item_id = item.id.split('-')[1]
           var newBoardType = evt.to.dataset.boardType  // Assuming each list has a data-board-type attribute
           var oldBoardType = evt.from.dataset.boardType
           var newIndex = evt.newIndex
@@ -78,21 +85,18 @@
           count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
           // create array of size count with numbers from count to 1
           var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
-          updateItemPosition(item, newBoardType, oldBoardType, arr[newIndex-1])
+          newIndex = arr[newIndex-1]
+          console.log('dragged item ID', item_id)
+          updateItemPosition(item_id, newBoardType, oldBoardType, newIndex)
         }
     });
   });
   
   function updateItemPosition(item, newBoardType, oldBoardType, newIndex) {
-    const itemId = item.id.split('-')[1];
-    console.log('ID', itemId)
     // Update the HTMX trigger with the correct POST URL and values
-    console.log('#hx-trigger-' + newBoardType)
     const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType)
-    console.log('THIS IS THE NEW INDEX RN:', newIndex)
-    console.log('htmxTrigger before', htmxTrigger)
-    htmxTrigger.setAttribute('hx-vals', '{"new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType + '"}');
-    console.log('htmxTrigger after', htmxTrigger)
+    htmxTrigger.setAttribute('hx-vals', '{"item_id": "' + item.toString() + '", "new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType + '"}');
+    console.log('trigger', htmxTrigger)
     // Trigger the HTMX request by simulating a click
     htmx.trigger(htmxTrigger, 'click');
   }
@@ -100,6 +104,4 @@
   function focusForm() {
     document.getElementById('add-item-input').select();
   }
-  
-
 </script>

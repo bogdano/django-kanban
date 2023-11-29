@@ -64,8 +64,9 @@ def delete_item(request, pk):
     item.delete()
     return JsonResponse({'message': 'deleted successfully'})
 
-def update_item_position(request, pk):
+def update_item_position(request):
   if request.method == 'POST':
+    pk = request.POST.get('item_id')
     item = Item.objects.get(pk=pk)
 
     new_position = int(request.POST.get('new_position'))
