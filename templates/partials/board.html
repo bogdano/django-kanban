@@ -10,7 +10,7 @@
     {% for item in ideas_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}</span>
+        <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
       </div>
     {% empty %}
@@ -23,7 +23,7 @@
     {% for item in todo_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}</span>
+        <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
       </div>
     {% empty %}
@@ -36,7 +36,7 @@
     {% for item in doing_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
         <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}</span>
+        <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
       </div>
     {% empty %}
@@ -48,8 +48,8 @@
     <h3>Done</h3>
     {% for item in done_items %}
       <div class="kanban-item" id="item-{{ item.id }}">
-        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}</span>
+        <input type="checkbox" {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+        <span>{{ item.content }}, {{ item.order }} </span>
         <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
       </div>
     {% empty %}

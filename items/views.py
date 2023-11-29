@@ -46,7 +46,7 @@ def create_item(request):
     # Get or create the 'IDEAS' board list
     ideas_list, created = BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})
     # Add the item to the board list
-    order = BoardList.objects.filter(list_type='IDEAS').count()
+    order = BoardList.objects.get(list_type='IDEAS').items.all().count()
     item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order)
     ideas_list.items.add(item)
 
@@ -80,7 +80,7 @@ def update_item_position(request):
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
       item_to_shift.save()
-    items_to_shift = BoardList.objects.filter(list_type=new_board, order__gte=new_position).order_by('-order')
+    items_to_shift = BoardList.objects.get(list_type=new_board).items.filter(order__gte=new_position).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order += 1
       item_to_shift.save()
@@ -94,10 +94,10 @@ def update_item_position(request):
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
     context = {
-      'ideas_items': BoardList.objects.filter(list_type='IDEAS').order_by('-order'),
-      'todo_items': BoardList.objects.filter(list_type='TODO').order_by('-order'),
-      'doing_items': BoardList.objects.filter(list_type='DOING').order_by('-order'),
-      'done_items': BoardList.objects.filter(list_type='DONE').order_by('-order'),
+      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
+      'todo_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
     }
     return render(request, 'partials/board.html', context)
 
@@ -114,6 +114,8 @@ def update_item_position_checked(request, pk):
       new_board = 'DOING'
     elif old_board == 'DOING':
       new_board = 'DONE'
+    elif old_board == 'DONE':
+      new_board = 'DOING'
 
     new_position = BoardList.objects.filter(list_type=new_board).count()
     old_position = item.order
@@ -128,7 +130,8 @@ def update_item_position_checked(request, pk):
       item_to_shift.order += 1
       item_to_shift.save()
 
-    item.boardlist.get().delete()
+    # remove item from boardlist
+    BoardList.objects.get(list_type=old_board).items.remove(item)
     item.order = new_position
     BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
@@ -136,15 +139,10 @@ def update_item_position_checked(request, pk):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-
-    ideas_list, created = BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})
-    todo_list, created = BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})
-    doing_list, created = BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})
-    done_list, created = BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})
     context = {
-      'ideas_items': ideas_list.items.all().order_by('-order'),
-      'todo_items': todo_list.items.all().order_by('-order'),
-      'doing_items': doing_list.items.all().order_by('-order'),
-      'done_items': done_list.items.all().order_by('-order'),
+      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
+      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
+      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
     }
     return render(request, 'partials/board.html', context)
