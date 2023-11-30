@@ -1,64 +1,65 @@
 <div class="kanban-board" id="kanban-board" hx-trigger="updateItem" hx-swap="innerHTML">
-
-  <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#ideas-list" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
-    <input type="text" id="add-item-input" name="content" placeholder="New item" required>
-    <input type="submit" value="Add">
-  </form>
-
-  <div class="kanban-list" id="ideas-list" data-board-type="IDEAS">
-    <h3>Ideas</h3>
-    {% for item in ideas_items %}
-      <div class="kanban-item" id="item-{{ item.id }}">
-        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.id }} </span>
-        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-      </div>
-    {% empty %}
-      <p class="undraggable">No items in Ideas.</p>
-    {% endfor %}
-  </div>
-
-  <div class="kanban-list" id="todo-list" data-board-type="TODO">
-    <h3>Todo</h3>
-    {% for item in todo_items %}
-      <div class="kanban-item" id="item-{{ item.id }}">
-        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.id }} </span>
-        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-      </div>
-    {% empty %}
-      <p class="undraggable">No items in Todo.</p>
-    {% endfor %}
-  </div>
   
-  <div class="kanban-list" id="doing-list" data-board-type="DOING">
-    <h3>Doing</h3>
-    {% for item in doing_items %}
-      <div class="kanban-item" id="item-{{ item.id }}">
-        <input type="checkbox" hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.id }} </span>
-        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+  <div id="kanban-board-wrapper">
+    <div class="kanban-list-wrapper">
+      <h3>Ideas</h3>
+      <div class="kanban-list {% if not ideas_items %}empty{% endif %}" id="ideas-list" data-board-type="IDEAS">
+        {% for item in ideas_items %}
+          <div class="kanban-item" id="item-{{ item.id }}">
+            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+            <span>{{ item.content }}</span>
+            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
+            <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p class="undraggable">No items in Doing.</p>
-    {% endfor %}
-  </div>
+      <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
+        <input type="text" id="add-item-input" name="content" placeholder="New item" required>
+        <input type="submit" value="Add">
+      </form>
+    </div>
 
-  <div class="kanban-list" id="done-list" data-board-type="DONE">
-    <h3>Done</h3>
-    {% for item in done_items %}
-      <div class="kanban-item" id="item-{{ item.id }}">
-        <input type="checkbox" {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-        <span>{{ item.content }}, {{ item.id }} </span>
-        <button hx-swap="delete" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div">Del</button>
-        <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+    <div class="kanban-list-wrapper">
+      <h3>Todo</h3>
+      <div class="kanban-list {% if not todo_items %}empty{% endif %}" id="todo-list" data-board-type="TODO">
+        {% for item in todo_items %}
+          <div class="kanban-item" id="item-{{ item.id }}">
+            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+            <span>{{ item.content }}</span>
+            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
+            <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p class="undraggable">No items in Done.</p>
-    {% endfor %}
+    </div>
+    
+    <div class="kanban-list-wrapper">
+      <h3>Doing</h3>
+      <div class="kanban-list {% if not doing_items %}empty{% endif %}" id="doing-list" data-board-type="DOING">
+        {% for item in doing_items %}
+          <div class="kanban-item" id="item-{{ item.id }}">
+            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+            <span>{{ item.content }}</span>
+            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
+            <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="kanban-list-wrapper">
+      <h3>Done</h3>
+      <div class="kanban-list {% if not done_items %}empty{% endif %}" id="done-list" data-board-type="DONE">
+        {% for item in done_items %}
+          <div class="kanban-item" id="item-{{ item.id }}">
+            <input type="checkbox" class="undraggable"  {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+            <span>{{ item.content }}</span>
+            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
+            <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -67,6 +68,8 @@
 
   document.querySelectorAll('.kanban-list').forEach(function(list) {
     new Sortable(list, {
+      chosenClass: 'sortable-chosen', // Class name for the chosen item
+      ghostClass: 'sortable-ghost', // Class name for the drop placeholder
       group: 'shared',
       filter: '.undraggable', // 'undraggable' class is not draggable
       onMove: function (evt) {
@@ -85,8 +88,8 @@
           count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
           // create array of size count with numbers from count to 1
           var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
-          newIndex = arr[newIndex-1]
-          console.log('dragged item ID', item_id)
+          newIndex = arr[newIndex]
+          console.log('dragged item ID', item_id, newIndex)
           updateItemPosition(item_id, newBoardType, oldBoardType, newIndex)
         }
     });

@@ -54,8 +54,14 @@ def create_item(request):
 
     ideas_board_list = BoardList.objects.get(list_type='IDEAS')
     ideas_items = ideas_board_list.items.all().order_by('-order')
-    context = {'ideas_items': ideas_items}
-    return render(request, 'partials/boardlist.html', context)
+
+    context = {
+      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
+      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
+      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
+    }
+    return render(request, 'partials/board.html', context)
 
 def delete_item(request, pk):
   if request.method == 'DELETE':
@@ -117,17 +123,13 @@ def update_item_position_checked(request, pk):
     elif old_board == 'DONE':
       new_board = 'DOING'
 
-    new_position = BoardList.objects.filter(list_type=new_board).count()
+    new_position = BoardList.objects.get(list_type=new_board).items.count()+1
     old_position = item.order
 
     # shift order of items in boards
     items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
-      item_to_shift.save()
-    items_to_shift = BoardList.objects.get(list_type=new_board).items.filter(order__gte=new_position).order_by('-order')
-    for item_to_shift in items_to_shift:
-      item_to_shift.order += 1
       item_to_shift.save()
 
     # remove item from boardlist
