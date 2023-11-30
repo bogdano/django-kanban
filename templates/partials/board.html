@@ -1,8 +1,13 @@
 <div class="kanban-board" id="kanban-board" hx-trigger="updateItem" hx-swap="innerHTML">
-  
   <div id="kanban-board-wrapper">
     <div class="kanban-list-wrapper">
       <h3>Ideas</h3>
+      
+      <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
+        <input type="text" id="add-item-input" name="content" placeholder="New item" required>
+        <button type="submit"><img src="../static/add.svg"></button>
+      </form>
+
       <div class="kanban-list {% if not ideas_items %}empty{% endif %}" id="ideas-list" data-board-type="IDEAS">
         {% for item in ideas_items %}
           <div class="kanban-item" id="item-{{ item.id }}">
@@ -13,10 +18,6 @@
           </div>
         {% endfor %}
       </div>
-      <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
-        <input type="text" id="add-item-input" name="content" placeholder="New item" required>
-        <input type="submit" value="Add">
-      </form>
     </div>
 
     <div class="kanban-list-wrapper">
