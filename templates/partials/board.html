@@ -2,16 +2,19 @@
   <div id="kanban-board-wrapper">
     {% for board_list in board_lists %}
       <div class="kanban-list-wrapper">
-        <h3>{{ board_list.name }}</h3>
-        <form class="add-item-form" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-settle="focusForm({{ board_list.name }})" role="group">
+        <div class="kanban-list-header">
+          <h3>{{ board_list.name }}</h3>
+          <button class="toggle-add-item-form" data-board-type="{{ board_list.name }}"><img class="form-button-img" src="../static/img/add.svg"></button>
+        </div>
+        <form class="add-item-form" style="display:none;" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-settle="focusForm({{ board_list.name }})" role="group">
           <input type="text" name="content" placeholder="New item" required>
           <input type="hidden" name="board" value="{{ board_list.name }}">
-          <button type="submit"><img src="../static/img/add.svg"></button>
+          <button type="submit"><img class="form-button-img" src="../static/img/add_new.svg"></button>
         </form>
         <div class="kanban-list {% if not board_list.ordered_items %}empty{% endif %}" id="{{ board_list.name|lower }}-list" data-board-type="{{ board_list.name }}">
-          {% for item in board_list.ordered_items %}
-            {% include 'partials/item.html' %}
-          {% endfor %}
+        {% for item in board_list.ordered_items %}
+          {% include 'partials/item.html' %}
+        {% endfor %}
         </div>
       </div>
     {% endfor %}
@@ -22,6 +25,8 @@
   // htmx.logAll();
   document.querySelectorAll('.kanban-list').forEach(function(list) {
     new Sortable(list, {
+      delay: 250, // time in milliseconds to define when the sorting should start
+	    delayOnTouchOnly: true,
       chosenClass: 'sortable-chosen', // Class name for the chosen item
       ghostClass: 'sortable-ghost', // Class name for the drop placeholder
       group: 'shared',
@@ -62,4 +67,14 @@
     document.getElementByID('add-item-input' + boardlist).select();
     console.log('focus', boardlist)
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-add-item-form').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var form = document.querySelector('#add-item-form-' + button.dataset.boardType)
+        form.style.display = form.style.display === 'none' ? 'inline-flex' : 'none';
+        form.querySelector('input[name="content"]').focus();
+      });
+    });
+  });
 </script>

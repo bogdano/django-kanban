@@ -22,6 +22,16 @@ logger = logging.getLogger(__name__)
 # this would be simplest considering we're using sortable.js
 
 def home_view(request):
+  # insantiate boards
+  if not BoardList.objects.filter(list_type='IDEAS').exists():
+    BoardList.objects.create(list_type='IDEAS', name='Ideas')
+  if not BoardList.objects.filter(list_type='TODO').exists():
+    BoardList.objects.create(list_type='TODO', name='Todo')
+  if not BoardList.objects.filter(list_type='DOING').exists():
+    BoardList.objects.create(list_type='DOING', name='Doing')
+  if not BoardList.objects.filter(list_type='DONE').exists():
+    BoardList.objects.create(list_type='DONE', name='Done')
+    
   board_lists = BoardList.objects.prefetch_related('items').all()
   # Modify each board list's items to be in reverse order
   for board_list in board_lists:
