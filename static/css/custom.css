@@ -25,7 +25,7 @@
   border: 1px solid var(--pico-muted-border-color); /* Border color for each list */
   padding: 0.1rem; /* Padding inside each list */
   margin-bottom: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .kanban-list.empty::after {
