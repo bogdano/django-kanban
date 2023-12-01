@@ -22,18 +22,11 @@ logger = logging.getLogger(__name__)
 # this would be simplest considering we're using sortable.js
 
 def home_view(request):
-  ideas_list, created = BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})
-  todo_list, created = BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})
-  doing_list, created = BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})
-  done_list, created = BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})
-
-  context = {
-    'ideas_items': ideas_list.items.all().order_by('-order'),
-    'todo_items': todo_list.items.all().order_by('-order'),
-    'doing_items': doing_list.items.all().order_by('-order'),
-    'done_items': done_list.items.all().order_by('-order'),
-  }
-  return render(request, 'home.html', context)
+  board_lists = BoardList.objects.prefetch_related('items').all()
+  # Modify each board list's items to be in reverse order
+  for board_list in board_lists:
+    board_list.ordered_items = board_list.items.all().order_by('-order')
+  return render(request, 'home.html', {'board_lists': board_lists})
 
 def board_view(request):
   return render(request, 'partials/board.html')
@@ -42,26 +35,20 @@ def board_view(request):
 def create_item(request):
   if request.method == 'POST':
     content = request.POST.get('content')
-
+    board = request.POST.get('board')
     # Get or create the 'IDEAS' board list
-    ideas_list, created = BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})
+    board_list = BoardList.objects.get(list_type=board.upper())
     # Add the item to the board list
-    order = BoardList.objects.get(list_type='IDEAS').items.all().count()+1
+    order = board_list.items.all().count()+1
     item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order)
-    ideas_list.items.add(item)
+    board_list.items.add(item)
 
     Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board='Ideas')
 
-    ideas_board_list = BoardList.objects.get(list_type='IDEAS')
-    ideas_items = ideas_board_list.items.all().order_by('-order')
-
-    context = {
-      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
-      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
-      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
-      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
-    }
-    return render(request, 'partials/board.html', context)
+    board_lists = BoardList.objects.prefetch_related('items').all()
+    for board_list in board_lists:
+      board_list.ordered_items = board_list.items.all().order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists})
 
 def delete_item(request, pk):
   if request.method == 'DELETE':
@@ -93,13 +80,10 @@ def update_item(request, pk):
     item.content = content
     item.save()
     Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
-    context = {
-      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
-      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
-      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
-      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
-    }
-    return render(request, 'partials/board.html', context)
+    board_lists = BoardList.objects.prefetch_related('items').all()
+    for board_list in board_lists:
+      board_list.ordered_items = board_list.items.all().order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists})
 
 def update_item_position(request):
   if request.method == 'POST':
@@ -130,13 +114,10 @@ def update_item_position(request):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    context = {
-      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
-      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
-      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
-      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
-    }
-    return render(request, 'partials/board.html', context)
+    board_lists = BoardList.objects.prefetch_related('items').all()
+    for board_list in board_lists:
+      board_list.ordered_items = board_list.items.all().order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists})
 
 
 def update_item_position_checked(request, pk):
@@ -172,10 +153,7 @@ def update_item_position_checked(request, pk):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    context = {
-      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
-      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
-      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
-      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
-    }
-    return render(request, 'partials/board.html', context)
+    board_lists = BoardList.objects.prefetch_related('items').all()
+    for board_list in board_lists:
+      board_list.ordered_items = board_list.items.all().order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists})

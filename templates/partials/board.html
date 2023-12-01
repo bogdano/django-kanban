@@ -1,53 +1,25 @@
 <div class="kanban-board" id="kanban-board" hx-trigger="updateItem" hx-swap="innerHTML">
   <div id="kanban-board-wrapper">
-    <div class="kanban-list-wrapper">
-      <h3>Ideas</h3>
-      
-      <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
-        <input type="text" id="add-item-input" name="content" placeholder="New item" required>
-        <input type="hidden" name="board" value="IDEAS">
-        <button type="submit"><img src="../static/img/add.svg"></button>
-      </form>
-
-      <div class="kanban-list {% if not ideas_items %}empty{% endif %}" id="ideas-list" data-board-type="IDEAS">
-        {% for item in ideas_items %}
-          {% include 'partials/item.html' %}
-        {% endfor %}
+    {% for board_list in board_lists %}
+      <div class="kanban-list-wrapper">
+        <h3>{{ board_list.name }}</h3>
+        <form class="add-item-form" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-settle="focusForm({{ board_list.name }})" role="group">
+          <input type="text" name="content" placeholder="New item" required>
+          <input type="hidden" name="board" value="{{ board_list.name }}">
+          <button type="submit"><img src="../static/img/add.svg"></button>
+        </form>
+        <div class="kanban-list {% if not board_list.ordered_items %}empty{% endif %}" id="{{ board_list.name|lower }}-list" data-board-type="{{ board_list.name }}">
+          {% for item in board_list.ordered_items %}
+            {% include 'partials/item.html' %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
-
-    <div class="kanban-list-wrapper">
-      <h3>Todo</h3>
-      <div class="kanban-list {% if not todo_items %}empty{% endif %}" id="todo-list" data-board-type="TODO">
-        {% for item in todo_items %}
-          {% include 'partials/item.html' %}
-        {% endfor %}
-      </div>
-    </div>
-    
-    <div class="kanban-list-wrapper">
-      <h3>Doing</h3>
-      <div class="kanban-list {% if not doing_items %}empty{% endif %}" id="doing-list" data-board-type="DOING">
-        {% for item in doing_items %}
-          {% include 'partials/item.html' %}
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="kanban-list-wrapper">
-      <h3>Done</h3>
-      <div class="kanban-list {% if not done_items %}empty{% endif %}" id="done-list" data-board-type="DONE">
-        {% for item in done_items %}
-          {% include 'partials/item.html' %}
-        {% endfor %}
-      </div>
-    </div>
+    {% endfor %}
   </div>
 </div>
 
 <script>
   // htmx.logAll();
-
   document.querySelectorAll('.kanban-list').forEach(function(list) {
     new Sortable(list, {
       chosenClass: 'sortable-chosen', // Class name for the chosen item
@@ -79,14 +51,15 @@
   
   function updateItemPosition(item, newBoardType, oldBoardType, newIndex) {
     // Update the HTMX trigger with the correct POST URL and values
-    const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType)
-    htmxTrigger.setAttribute('hx-vals', '{"item_id": "' + item.toString() + '", "new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType + '"}');
+    const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType.toUpperCase())
+    htmxTrigger.setAttribute('hx-vals', '{"item_id": "' + item.toString() + '", "new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType.toUpperCase() + '"}');
     console.log('trigger', htmxTrigger)
     // Trigger the HTMX request by simulating a click
     htmx.trigger(htmxTrigger, 'click');
   }
 
-  function focusForm() {
-    document.getElementById('add-item-input').select();
+  function focusForm(boardlist) {
+    document.getElementByID('add-item-input' + boardlist).select();
+    console.log('focus', boardlist)
   }
 </script>

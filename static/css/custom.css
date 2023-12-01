@@ -32,8 +32,8 @@
   content: 'No items in Ideas';
   display: block;
   text-align: center;
-  color: grey; /* Customize as needed */
-  padding: 10px; /* Customize as needed */
+  color: rgba(61, 61, 61, 0.8); /* Customize as needed */
+  padding: 0.4rem; /* Customize as needed */
 } 
 
 #done-list .kanban-item  span {
@@ -53,10 +53,12 @@
 } .kanban-item span {
   padding: 0.25rem 0.15rem;
 } .kanban-item input {
+  z-index: 1;
   min-width: 1rem;
   width: 1rem;
   height: 1rem;
   margin-left: 0.4rem;
+  margin-top: 0rem;
 }
 
 .kanban-item-button {
@@ -99,11 +101,13 @@
   opacity: 1; /* Show overlay on hover */
 }
 
-#add-item-form  > *{
+.add-item-form  > * {
   padding: 0.45rem;
   font-size: 0.8rem;
-  height: auto;
-} #add-item-form > button > img {
+} .add-item-form input, button{
+  height: 2.2rem;
+  padding: 0.5rem;
+} .add-item-form > button > img {
   width: 1.5rem; /* Adjust icon size as needed */
   min-width: 1.5rem;
   height: .8rem; /* Adjust icon size as needed */

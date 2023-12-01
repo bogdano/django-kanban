@@ -1,10 +1,8 @@
 <div class="kanban-item" id="item-{{ item.id }}">
   <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
   <span>{{ item.content }}</span>
-
   <div class="item-overlay">
     <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest .kanban-item"><img src="../static/img/trash.svg"></button>
   </div>
-
   <button id="hx-trigger-{{ item.boardlist.first.list_type }}" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
 </div>
