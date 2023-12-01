@@ -70,6 +70,37 @@ def delete_item(request, pk):
     item.delete()
     return JsonResponse({'message': 'deleted successfully'})
 
+def edit_item(request, pk):
+  if request.method == 'GET':
+    item = Item.objects.get(pk=pk)
+    context = {
+      'item': item
+    }
+    return render(request, 'partials/edit_item.html', context)
+
+def cancel_edit_item(request, pk):
+  if request.method == 'GET':
+    item = Item.objects.get(pk=pk)
+    context = {
+      'item': item
+    }
+    return render(request, 'partials/item.html', context)
+
+def update_item(request, pk):
+  if request.method == 'POST':
+    item = Item.objects.get(pk=pk)
+    content = request.POST.get('content')
+    item.content = content
+    item.save()
+    Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
+    context = {
+      'ideas_items': BoardList.objects.get_or_create(list_type='IDEAS', defaults={'name': 'Ideas'})[0].items.all().order_by('-order'),
+      'todo_items': BoardList.objects.get_or_create(list_type='TODO', defaults={'name': 'Todo'})[0].items.all().order_by('-order'),
+      'doing_items': BoardList.objects.get_or_create(list_type='DOING', defaults={'name': 'Doing'})[0].items.all().order_by('-order'),
+      'done_items': BoardList.objects.get_or_create(list_type='DONE', defaults={'name': 'Done'})[0].items.all().order_by('-order'),
+    }
+    return render(request, 'partials/board.html', context)
+
 def update_item_position(request):
   if request.method == 'POST':
     pk = request.POST.get('item_id')

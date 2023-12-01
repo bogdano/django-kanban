@@ -5,17 +5,13 @@
       
       <form id="add-item-form" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-request="focusForm()" role="group">
         <input type="text" id="add-item-input" name="content" placeholder="New item" required>
-        <button type="submit"><img src="../static/add.svg"></button>
+        <input type="hidden" name="board" value="IDEAS">
+        <button type="submit"><img src="../static/img/add.svg"></button>
       </form>
 
       <div class="kanban-list {% if not ideas_items %}empty{% endif %}" id="ideas-list" data-board-type="IDEAS">
         {% for item in ideas_items %}
-          <div class="kanban-item" id="item-{{ item.id }}">
-            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-            <span>{{ item.content }}</span>
-            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
-            <button id="hx-trigger-IDEAS" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-          </div>
+          {% include 'partials/item.html' %}
         {% endfor %}
       </div>
     </div>
@@ -24,12 +20,7 @@
       <h3>Todo</h3>
       <div class="kanban-list {% if not todo_items %}empty{% endif %}" id="todo-list" data-board-type="TODO">
         {% for item in todo_items %}
-          <div class="kanban-item" id="item-{{ item.id }}">
-            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-            <span>{{ item.content }}</span>
-            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
-            <button id="hx-trigger-TODO" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-          </div>
+          {% include 'partials/item.html' %}
         {% endfor %}
       </div>
     </div>
@@ -38,12 +29,7 @@
       <h3>Doing</h3>
       <div class="kanban-list {% if not doing_items %}empty{% endif %}" id="doing-list" data-board-type="DOING">
         {% for item in doing_items %}
-          <div class="kanban-item" id="item-{{ item.id }}">
-            <input type="checkbox" class="undraggable"  hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-            <span>{{ item.content }}</span>
-            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
-            <button id="hx-trigger-DOING" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-          </div>
+          {% include 'partials/item.html' %}
         {% endfor %}
       </div>
     </div>
@@ -52,12 +38,7 @@
       <h3>Done</h3>
       <div class="kanban-list {% if not done_items %}empty{% endif %}" id="done-list" data-board-type="DONE">
         {% for item in done_items %}
-          <div class="kanban-item" id="item-{{ item.id }}">
-            <input type="checkbox" class="undraggable"  {% if item.checked %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
-            <span>{{ item.content }}</span>
-            <button hx-swap="delete" class="undraggable kanban-item-button" hx-delete="/delete-item/{{ item.id }}/" hx-target="closest div"><img src="../static/trash.svg"></button>
-            <button id="hx-trigger-DONE" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
-          </div>
+          {% include 'partials/item.html' %}
         {% endfor %}
       </div>
     </div>
