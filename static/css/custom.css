@@ -49,7 +49,7 @@
   cursor: pointer;
   border-radius: 0.2rem;
 } .kanban-item:hover {
-  background-color: rgba(197, 47, 33, 0.1)
+  background-color: rgba(197, 47, 33, 0.3);
 } .kanban-item span {
   padding: 0.25rem 0.15rem;
 } .kanban-item input {
@@ -72,9 +72,9 @@
   height: 1.5rem;
   padding: 0;
   border: none;
-  background-color: rgba(197, 47, 33, 0);
+  background-color: hsla(5, 70%, 15%, 0.9);
 } .kanban-item-button:hover {
-  background-color: rgba(197, 47, 33, 1);
+  background-color: var(--pico-primary-hover-background);
 } .kanban-item-button > img {
   /* Style for the delete button icon */
   width: .8rem; /* Adjust icon size as needed */
@@ -89,7 +89,7 @@
   flex-wrap: wrap;
   align-content: center;
   padding-right: 0.2rem;
-  gap: 0.05rem; /* Gap between buttons */
+  gap: 0.2rem; /* Gap between buttons */
   position: absolute;
   top: 0;
   left: 0;
@@ -103,7 +103,9 @@
   opacity: 1; /* Show overlay on hover */
 }
 
-.add-item-form  > * {
+.add-item-form {
+  margin-bottom: 0.1rem;;
+} .add-item-form  > * {
   padding: 0.45rem;
   font-size: 0.8rem;
 } .add-item-form input, .add-item-form button{
@@ -118,12 +120,38 @@
 
 .kanban-list-header {
   display: inline-flex;
-  align-items: baseline; 
-}
+  align-items: baseline;
+} 
+
 .toggle-add-item-form {
   margin-left: 1rem;
-  padding: 0.25rem;
+  padding: 0.1rem;
+}
 
+.item-timestamp {
+  font-size: 0.45rem;
+  color: var(--pico-muted-color);
+  margin-left: 0.15rem;
+}
+
+.author-snippet {
+  margin: 0.55rem;
+  border-radius: 0.25rem;
+  background-color: #220c0a;
+  color: --pico-muted-border-color;
+  font-size: 0.5rem;
+  height: 1.1rem;
+} .author-snippet span {
+  color: var(--pico-muted-color);
+}
+
+form.htmx-request, button.htmx-request {
+  opacity: .3;
+  transition: opacity 100ms linear;
+}
+
+.edit-item > input {
+  font-size: 0.7rem;
 }
 
 /* Red color for light color scheme (Default) */

@@ -22,6 +22,12 @@ logger = logging.getLogger(__name__)
 # this would be simplest considering we're using sortable.js
 
 def home_view(request):
+  # set item display dates
+  items = Item.objects.all()
+  for item in items:
+    if item.last_updated.date() != timezone.now().date():
+      item.display_date = item.last_updated.strftime("%b %d")
+    item.save()
   # insantiate boards
   if not BoardList.objects.filter(list_type='IDEAS').exists():
     BoardList.objects.create(list_type='IDEAS', name='Ideas')
@@ -50,11 +56,10 @@ def create_item(request):
     board_list = BoardList.objects.get(list_type=board.upper())
     # Add the item to the board list
     order = board_list.items.all().count()+1
-    item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order)
+    item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order, last_updated=timezone.now(), display_date=timezone.now().strftime("%I:%M %p").lstrip('0'))
     board_list.items.add(item)
 
     Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board='Ideas')
-
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.all().order_by('-order')
@@ -87,9 +92,12 @@ def update_item(request, pk):
   if request.method == 'POST':
     item = Item.objects.get(pk=pk)
     content = request.POST.get('content')
-    item.content = content
-    item.save()
-    Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
+    if item.content != content:
+      item.last_updated = timezone.now()
+      item.content = content
+      item.updated_by = request.user
+      item.save()
+      Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.all().order_by('-order')
@@ -121,6 +129,8 @@ def update_item_position(request):
     BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
       item.checked = True
+    item.last_updated = timezone.now()
+    item.updated_by = request.user
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
@@ -160,6 +170,8 @@ def update_item_position_checked(request, pk):
     BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
       item.checked = True
+    item.last_updated = timezone.now()
+    item.updated_by = request.user
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)

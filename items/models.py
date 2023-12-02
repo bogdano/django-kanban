@@ -18,6 +18,8 @@ class Item(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by', null=True)
     # an integer to store the position of an item in a boardlist, updated each time an item is moved to a new board
     order = models.IntegerField(default=0)
+    # a date field to store the display date, calculated in views.py
+    display_date = models.CharField(max_length=10, blank=True, default='')
 
     def __str__(self):
         return self.content

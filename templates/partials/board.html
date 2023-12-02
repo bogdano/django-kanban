@@ -1,22 +1,8 @@
-<div class="kanban-board" id="kanban-board" hx-trigger="updateItem" hx-swap="innerHTML">
+{% load static %}
+<div class="kanban-board" id="kanban-board" hx-swap="innerHTML">
   <div id="kanban-board-wrapper">
     {% for board_list in board_lists %}
-      <div class="kanban-list-wrapper">
-        <div class="kanban-list-header">
-          <h3>{{ board_list.name }}</h3>
-          <button class="toggle-add-item-form" data-board-type="{{ board_list.name }}"><img class="form-button-img" src="../static/img/add.svg"></button>
-        </div>
-        <form class="add-item-form" style="display:none;" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" hx-on::after-settle="focusForm({{ board_list.name }})" role="group">
-          <input type="text" name="content" placeholder="New item" required>
-          <input type="hidden" name="board" value="{{ board_list.name }}">
-          <button type="submit"><img class="form-button-img" src="../static/img/add_new.svg"></button>
-        </form>
-        <div class="kanban-list {% if not board_list.ordered_items %}empty{% endif %}" id="{{ board_list.name|lower }}-list" data-board-type="{{ board_list.name }}">
-        {% for item in board_list.ordered_items %}
-          {% include 'partials/item.html' %}
-        {% endfor %}
-        </div>
-      </div>
+      {% include 'partials/boardlist.html' %}
     {% endfor %}
   </div>
 </div>
@@ -30,13 +16,8 @@
       chosenClass: 'sortable-chosen', // Class name for the chosen item
       ghostClass: 'sortable-ghost', // Class name for the drop placeholder
       group: 'shared',
-      filter: '.undraggable', // 'undraggable' class is not draggable
-      onMove: function (evt) {
-        // Prevent placing items after the undraggable element
-        if (evt.related.className.includes('undraggable')) {
-            return false;
-        }
-      },
+      filter: 'input', // 'undraggable' class is not draggable
+      preventOnFilter: false, // Prevents sorting if trying to drag an undraggable element
       onEnd: function (evt) {
           var item = evt.item
           var item_id = item.id.split('-')[1]
@@ -47,8 +28,8 @@
           count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
           // create array of size count with numbers from count to 1
           var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
-          newIndex = arr[newIndex]
-          console.log('dragged item ID', item_id, newIndex)
+          console.log(arr)
+          newIndex = arr[newIndex-1]
           updateItemPosition(item_id, newBoardType, oldBoardType, newIndex)
         }
     });
@@ -58,22 +39,31 @@
     // Update the HTMX trigger with the correct POST URL and values
     const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType.toUpperCase())
     htmxTrigger.setAttribute('hx-vals', '{"item_id": "' + item.toString() + '", "new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType.toUpperCase() + '"}');
-    console.log('trigger', htmxTrigger)
     // Trigger the HTMX request by simulating a click
     htmx.trigger(htmxTrigger, 'click');
   }
 
-  function focusForm(boardlist) {
-    document.getElementByID('add-item-input' + boardlist).select();
-    console.log('focus', boardlist)
+  function focusForm(id) {
+    console.log('focusing form')
+    input = document.querySelector('#edit-item-input-' + id);
+    input.select();
+    form = input.closest('form');
+    input.addEventListener('blur', function() {
+      htmx.trigger(form, 'submit');
+    });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.toggle-add-item-form').forEach(function(button) {
-      button.addEventListener('click', function() {
-        var form = document.querySelector('#add-item-form-' + button.dataset.boardType)
-        form.style.display = form.style.display === 'none' ? 'inline-flex' : 'none';
-        form.querySelector('input[name="content"]').focus();
+  document.querySelectorAll('.toggle-add-item-form').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var form = document.querySelector('#add-item-form-' + button.dataset.boardType)
+      form.style.display = form.style.display === 'none' ? 'inline-flex' : 'none';
+      form.querySelector('input[name="content"]').focus();
+      form.querySelector('input[name="content"]').addEventListener('blur', function() {
+        if (form.querySelector('input[name="content"]').value === '') {
+          form.style.display = 'none';
+        } else {
+          htmx.trigger(form, 'submit');
+        }
       });
     });
   });
