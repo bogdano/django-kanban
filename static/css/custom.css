@@ -195,3 +195,80 @@ form.htmx-request, button.htmx-request {
   --pico-primary-focus: rgba(241, 121, 97, 0.25);
   --pico-primary-inverse: #fff;
 }
+
+/* THEME SWITCHER SHIT */
+/* The switch - the box around the slider */
+.switch {
+  position: absolute;
+  top: 1rem;
+  right:1rem;
+  display: inline-block;
+  width: 2.5rem !important;
+  height: 1rem;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #838383;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.5rem;
+  width: 1.5rem;
+  left: 0px;
+  bottom: 4px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  box-shadow: 0 0px 15px #2020203d;
+  background: rgb(26, 26, 26) url('../img/dark.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0rem 0rem 0.05rem 0.05rem rgba(187, 187, 187, 0.65);
+}
+
+input:checked + .slider {
+  background-color: #a8270d;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #fb4c2d;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(1rem);
+  -ms-transform: translateX(1rem);
+  transform: translateX(1rem);
+  background: white url('../img/light.svg') !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0rem 0rem 0.05rem 0.05rem rgba(116, 30, 30, 0.65);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 0.75rem;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}

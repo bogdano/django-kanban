@@ -10,11 +10,25 @@
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <script src="{% static 'js/htmx.min.js' %}"></script>
     <script src="{% static 'js/Sortable.min.js' %}"></script>
+    
+    <label id="switch" class="switch">
+      <input type="checkbox" data-theme-switcher="light" id="slider">
+      <span class="slider round"></span>
+    </label>
   </head>
   <body hx-boost="true" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <main class="container-fluid">
         {% block content %}
         {% endblock content %}
     </main>
+    <script src="{% static 'js/minimal-theme-switcher.js' %}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        if(window.localStorage.getItem("picoPreferredColorScheme") === "light") {
+          document.querySelector("#slider").checked = true;
+        }
+        themeSwitcher.schemeToLocalStorage()
+      });
+    </script>
   </body>
 </html>
