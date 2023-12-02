@@ -4,10 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView
 from django.views import View
 from django.utils import timezone
-import logging
 from django.contrib.auth import get_user_model
-
-logger = logging.getLogger(__name__)
 
 # will need a view to capture sortable events and update boardlist models with new item order, and add and remove items
 # will need a view to capture checkbox events to move items from boardlist to boardlist
@@ -35,18 +32,14 @@ def home_view(request):
 
   User = get_user_model()
   users = User.objects.all()
-  activities = Activity.objects.all().order_by('-timestamp')[:10]    
+  activities = Activity.objects.all().order_by('-timestamp')[:15]    
   board_lists = BoardList.objects.prefetch_related('items').all()
   for board_list in board_lists:
     board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
   return render(request, 'home.html', {'board_lists': board_lists, 'activities': activities, 'users': users})
 
 def board_view(request):
-  activities = Activity.objects.all().order_by('-timestamp')[:10]
-  board_lists = BoardList.objects.prefetch_related('items').all()
-  for board_list in board_lists:
-    board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
-  return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
+  return render(request, 'board.html')
 
 # create_item view will create a new item and add it to the ideas list
 def create_item(request):
@@ -56,12 +49,12 @@ def create_item(request):
     # Get or create the 'IDEAS' board list
     board_list = BoardList.objects.get(list_type=board.upper())
     # Add the item to the board list
-    order = board_list.items.all().count()+1
+    order = board_list.items.filter(archived=False).count()+1
     item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order, last_updated=timezone.now())
     board_list.items.add(item)
     Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board=board.upper())
 
-    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -71,9 +64,16 @@ def delete_item(request, pk):
   if request.method == 'POST':
     item = Item.objects.get(pk=pk)
     item.archived = True
+    item.order = 0
     item.save()
+    # get items to shift, all items with order greater than the order of the item to be deleted, and not archived
+    items_to_shift = item.boardlist.get().items.filter(order__gt=item.order, archived=False).order_by('-order')
+    for item_to_shift in items_to_shift:
+      item_to_shift.order -= 1
+      item_to_shift.save()
+
     Activity.objects.create(item=item, user=request.user, action='DELETED', source_board=item.boardlist.get().list_type, destination_board='')
-    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -105,7 +105,7 @@ def update_item(request, pk):
       item.updated_by = request.user
       item.save()
       Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
-    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -142,7 +142,7 @@ def update_item_position(request):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -184,7 +184,7 @@ def update_item_position_checked(request, pk):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
