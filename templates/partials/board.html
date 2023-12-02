@@ -5,6 +5,24 @@
       {% include 'partials/boardlist.html' %}
     {% endfor %}
   </div>
+  <div class="activities-container">
+    <div class="activity-list" id="activity-list">
+      <h5>Activity:</h5>
+      {% for activity in activities %}
+        {% include 'partials/activity.html' %}
+      {% endfor %}
+    </div>
+    <div class="user-list">
+      <h5>Team:</h5>
+      <ul class="user-list-items">
+        {% for user in users %}
+          <li class="user-list-item">
+            <span class="user-list-item-username">{{ user.username }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -28,7 +46,6 @@
           count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
           // create array of size count with numbers from count to 1
           var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
-          console.log(arr)
           newIndex = arr[newIndex-1]
           updateItemPosition(item_id, newBoardType, oldBoardType, newIndex)
         }
@@ -44,7 +61,6 @@
   }
 
   function focusForm(id) {
-    console.log('focusing form')
     input = document.querySelector('#edit-item-input-' + id);
     input.select();
     form = input.closest('form');
@@ -66,5 +82,23 @@
         }
       });
     });
+  });
+
+  function convertUTCToLocalTime() {
+    document.querySelectorAll('.item-timestamp').forEach(function(span) {
+      var utcDate = span.getAttribute('data-utc');
+      var localDate = new Date(utcDate);
+      if (localDate.getDate() == new Date().getDate()) {
+        span.textContent = localDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true });
+      } else {
+        span.textContent = localDate.toLocaleString();
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    convertUTCToLocalTime();
+  });
+  document.body.addEventListener('htmx:afterSwap', function () {
+    convertUTCToLocalTime();
   });
 </script>

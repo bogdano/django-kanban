@@ -1,22 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock title %}
-
 {% block content %}
 {% if user.is_authenticated %}
 <p>Hi {{ user.username }}! ({{ user.role }}).</p>
 <p><a href="{% url 'logout' %}">Log Out</a></p>
-
-{% include "partials/board.html" %}
-
+  {% include "partials/board.html" %}
 {% else %}
 <p>You are not logged in</p>
 <a href="{% url 'login' %}">Log In</a> |
 <a href="{% url 'signup' %}">Sign Up</a>
 {% endif %}
 {% endblock content %}
-
-<div class="activities-board" id="activities-board">
-  <!-- ADD ACTIVIITES SECTION AFTER REFACTORING VIEWS.PY -->
-</div>
-

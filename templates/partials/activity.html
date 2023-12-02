@@ -1,0 +1,23 @@
+{% load static %}
+<div class="activity-item">
+  <span class="activity-item-author">{{ activity.user.username }}</span>
+  <span class="activity-item-action">{{ activity.action|lower }}</span>
+    item 
+  <span class="activity-item-content">"{{ activity.item.content }}"</span>
+  {% if activity.action == "MOVED" %}
+    from 
+  <span class="activity-item-board">{{ activity.source_board|title }}</span>
+    to
+  <span class="activity-destination-board">{{ activity.destination_board|title }}, </span>
+  {% elif activity.action == "CREATED" %}
+    in
+  <span class="activity-destination-board">{{ activity.destination_board|title }}, </span>
+  {% elif activity.action == "DELETED" %}
+    from
+  <span class="activity-destination-board">{{ activity.source_board|title }}, </span>
+  {% elif activity.action == "UPDATED" %}
+    in
+  <span class="activity-destination-board">{{ activity.source_board|title }}, </span>
+  {% endif %}
+  <span class="item-timestamp" data-utc="{{ activity.timestamp|date:'c' }}"></span>
+</div>

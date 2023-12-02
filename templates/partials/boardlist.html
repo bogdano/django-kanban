@@ -11,8 +11,8 @@
       <input type="hidden" name="board" value="{{ board_list.name }}">
       <button type="submit"><img class="form-button-img" src="{% static 'img/add_new.svg' %}"></button>
     </form>
-  {% for item in board_list.ordered_items %}
-    {% include 'partials/item.html' %}
-  {% endfor %}
+    {% for item in board_list.ordered_items %}
+      {% include 'partials/item.html' %}
+    {% endfor %}
   </div>
 </div>

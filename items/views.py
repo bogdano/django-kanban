@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from django.views import View
 from django.utils import timezone
 import logging
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +23,6 @@ logger = logging.getLogger(__name__)
 # this would be simplest considering we're using sortable.js
 
 def home_view(request):
-  # set item display dates
-  items = Item.objects.all()
-  for item in items:
-    if item.last_updated.date() != timezone.now().date():
-      item.display_date = item.last_updated.strftime("%b %d")
-    item.save()
   # insantiate boards
   if not BoardList.objects.filter(list_type='IDEAS').exists():
     BoardList.objects.create(list_type='IDEAS', name='Ideas')
@@ -37,15 +32,21 @@ def home_view(request):
     BoardList.objects.create(list_type='DOING', name='Doing')
   if not BoardList.objects.filter(list_type='DONE').exists():
     BoardList.objects.create(list_type='DONE', name='Done')
-    
+
+  User = get_user_model()
+  users = User.objects.all()
+  activities = Activity.objects.all().order_by('-timestamp')[:10]    
   board_lists = BoardList.objects.prefetch_related('items').all()
-  # Modify each board list's items to be in reverse order
   for board_list in board_lists:
-    board_list.ordered_items = board_list.items.all().order_by('-order')
-  return render(request, 'home.html', {'board_lists': board_lists})
+    board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+  return render(request, 'home.html', {'board_lists': board_lists, 'activities': activities, 'users': users})
 
 def board_view(request):
-  return render(request, 'partials/board.html')
+  activities = Activity.objects.all().order_by('-timestamp')[:10]
+  board_lists = BoardList.objects.prefetch_related('items').all()
+  for board_list in board_lists:
+    board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+  return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
 
 # create_item view will create a new item and add it to the ideas list
 def create_item(request):
@@ -56,21 +57,27 @@ def create_item(request):
     board_list = BoardList.objects.get(list_type=board.upper())
     # Add the item to the board list
     order = board_list.items.all().count()+1
-    item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order, last_updated=timezone.now(), display_date=timezone.now().strftime("%I:%M %p").lstrip('0'))
+    item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order, last_updated=timezone.now())
     board_list.items.add(item)
+    Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board=board.upper())
 
-    Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board='Ideas')
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
-      board_list.ordered_items = board_list.items.all().order_by('-order')
-    return render(request, 'partials/board.html', {'board_lists': board_lists})
+      board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
 
 def delete_item(request, pk):
-  if request.method == 'DELETE':
+  if request.method == 'POST':
     item = Item.objects.get(pk=pk)
+    item.archived = True
+    item.save()
     Activity.objects.create(item=item, user=request.user, action='DELETED', source_board=item.boardlist.get().list_type, destination_board='')
-    item.delete()
-    return JsonResponse({'message': 'deleted successfully'})
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
+    board_lists = BoardList.objects.prefetch_related('items').all()
+    for board_list in board_lists:
+      board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
 
 def edit_item(request, pk):
   if request.method == 'GET':
@@ -98,10 +105,11 @@ def update_item(request, pk):
       item.updated_by = request.user
       item.save()
       Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
-      board_list.ordered_items = board_list.items.all().order_by('-order')
-    return render(request, 'partials/board.html', {'board_lists': board_lists})
+      board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
 
 def update_item_position(request):
   if request.method == 'POST':
@@ -134,10 +142,11 @@ def update_item_position(request):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
-      board_list.ordered_items = board_list.items.all().order_by('-order')
-    return render(request, 'partials/board.html', {'board_lists': board_lists})
+      board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})
 
 
 def update_item_position_checked(request, pk):
@@ -175,7 +184,8 @@ def update_item_position_checked(request, pk):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
-      board_list.ordered_items = board_list.items.all().order_by('-order')
-    return render(request, 'partials/board.html', {'board_lists': board_lists})
+      board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
+    return render(request, 'partials/board.html', {'board_lists': board_lists, 'activities': activities})

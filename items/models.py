@@ -18,8 +18,8 @@ class Item(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='updated_by', null=True)
     # an integer to store the position of an item in a boardlist, updated each time an item is moved to a new board
     order = models.IntegerField(default=0)
-    # a date field to store the display date, calculated in views.py
-    display_date = models.CharField(max_length=10, blank=True, default='')
+    # boolean to indicate if item is archived
+    archived = models.BooleanField(default=False)
 
     def __str__(self):
         return self.content
@@ -58,7 +58,7 @@ class Activity(models.Model):
     # activity records which user moved, updated, or deleted an item
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # activity records which item was acted upon
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.DO_NOTHING)
     # empty string which will store the name of the board from which an item was moved
     source_board = models.CharField(max_length=200)
     # empty string which will store the name of the board to which an item was moved
@@ -76,4 +76,4 @@ class Activity(models.Model):
             case 'UPDATED':
                 return f"{self.user.username} updated item {self.item.content} at {self.timestamp}"
             case 'DELETED':
-                return f"{self.user.username} deleted an item at {self.timestamp}"
+                return f"{self.user.username} deleted item {self.item.content} at {self.timestamp}"
