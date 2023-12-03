@@ -13,11 +13,10 @@
   </head>
   <body hx-boost="true" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <main class="container-fluid">
-      <label id="switch" class="switch">
-        <input type="checkbox" data-theme-switcher="light" id="slider">
-        <span class="slider round"></span>
-      </label>
       <h1 class="title">看板</h1>
+      <div class="theme-switcher">
+        🌘<input type="checkbox" class="switch" id="slider" data-theme-switcher="light" role="switch">☀️
+      </div>
       {% block content %}
       {% endblock content %}
     </main>
