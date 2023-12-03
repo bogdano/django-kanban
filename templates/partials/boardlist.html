@@ -7,10 +7,13 @@
   
   <div class="kanban-list {% if not board_list.ordered_items %}empty{% endif %}" id="{{ board_list.name|lower }}-list" data-board-type="{{ board_list.name }}">
     <form class="add-item-form" style="display:none;" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" role="group">
-      <input type="text" name="content" placeholder="New item" required>
-      <input type="hidden" name="board" value="{{ board_list.name }}">
-      <button type="submit"><img class="form-button-img" src="{% static 'img/add_new.svg' %}"></button>
+      <div class="textarea-container">
+        <textarea name="content" required placeholder="New item"></textarea>
+        <input type="hidden" name="board" value="{{ board_list.name }}">
+        <button type="submit" class="edit-item-submit-button"><img class="form-button-img" src="{% static 'img/add_new.svg' %}"></button>
+      </div>
     </form>
+
     {% for item in board_list.ordered_items %}
       {% include 'partials/item.html' %}
     {% endfor %}

@@ -64,7 +64,7 @@
   padding: 0.1rem; /* Padding inside each list */
   margin-bottom: 1rem;
   font-size: 0.8rem;
-  background-color: rgba(251, 222, 162, 0.02);
+  background-color: rgba(251, 222, 162, 0.05);
 }
 
 .kanban-list.empty::after {
@@ -156,7 +156,7 @@
   background-color: var(--pico-background-color);
   font-size: 0.5rem;
   text-decoration: none;
-  border: 1px solid var(--pico-muted-border-color);
+  border: 1px solid var(--pico-secondary-border);
 } .author-snippet span {
   color: var(--pico-muted-color);
   padding: 0;
@@ -164,17 +164,38 @@
 
 .add-item-form {
   margin-bottom: 0.1rem;;
-} .add-item-form  > * {
+} 
+
+/* .add-item-form  > * {
   padding: 0.45rem;
   font-size: 0.8rem;
 } .add-item-form input, .add-item-form button{
   height: 2.2rem;
   padding: 0.5rem;
-} .form-button-img {
+}  */
+
+.form-button-img {
   width: 1.5rem; /* Adjust icon size as needed */
   min-width: 1.5rem;
   height: .8rem; /* Adjust icon size as needed */
   margin-bottom: 0.25rem;
+}
+
+.textarea-container {
+  position: relative;
+} .textarea-container > textarea {
+  overflow: hidden;
+  resize: none;
+  font-size: 0.8rem;
+  margin: 0rem;
+  padding: 0 2rem 0 0;
+} .edit-item-submit-button {
+  position: absolute;
+  right: 0rem;
+  bottom: 0rem;
+  padding: 0;
+  margin: 0;
+  border-radius: 0.2rem 0 0.2rem 0;
 }
 
 .toggle-add-item-form {
@@ -188,7 +209,7 @@
   padding: 1rem 2rem 1rem 2rem; /* Padding inside each list */
   margin-bottom: 1rem;
   font-size: 0.75rem;
-  background-color: rgba(251, 222, 162, 0.02);
+  background-color: rgba(251, 222, 162, 0.05);
 } .activity-destination-board {
   font-weight: bold;
 } .activity-item-content {
@@ -199,6 +220,7 @@
 } .activity-item > .item-timestamp {
   font-size: 0.6rem;
 } .activity-item {
+  margin-bottom: 0.4rem;
   transition: all 0.1s ease;
 } .activity-item:hover {
   background-color: rgba(197, 47, 33, 0.1);
@@ -213,10 +235,6 @@
 
 .htmx-request {
   opacity: .3;
-}
-
-.edit-item > input {
-  font-size: 0.7rem;
 }
 
 /* Red color for light color scheme (Default) */

@@ -24,7 +24,7 @@
       chosenClass: 'sortable-chosen', // Class name for the chosen item
       ghostClass: 'sortable-ghost', // Class name for the drop placeholder
       group: 'shared',
-      filter: 'input', // 'undraggable' class is not draggable
+      filter: 'input,textarea', // 'undraggable' class is not draggable
       preventOnFilter: false, // Prevents sorting if trying to drag an undraggable element
       onEnd: function (evt) {
           var item = evt.item
@@ -63,11 +63,18 @@
     button.addEventListener('click', function() {
       var form = document.querySelector('#add-item-form-' + button.dataset.boardType)
       form.style.display = form.style.display === 'none' ? 'inline-flex' : 'none';
-      form.querySelector('input[name="content"]').focus();
-      form.querySelector('input[name="content"]').addEventListener('blur', function() {
-        if (form.querySelector('input[name="content"]').value === '') {
+      textarea = form.querySelector('textarea[name="content"]')
+      textarea.focus();
+      textarea.addEventListener('blur', function() {
+        if (textarea.value === '') {
           form.style.display = 'none';
         } else {
+          htmx.trigger(form, 'submit');
+        }
+      });
+      textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
           htmx.trigger(form, 'submit');
         }
       });
@@ -79,17 +86,38 @@
       var utcDate = span.getAttribute('data-utc');
       var localDate = new Date(utcDate);
       var today = new Date();
-      if (localDate.getDate() == today.getDate() && localDate.getMonth() == today.getMonth()) {
+      if (localDate.getDate() === today.getDate() && localDate.getMonth() == today.getMonth()) {
         span.textContent = localDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true });
       } else {
         span.textContent = localDate.toLocaleString([], { month: '2-digit', day: '2-digit' });
       }
     });
   }
+
   document.addEventListener('DOMContentLoaded', function () {
     convertUTCToLocalTime();
   });
+
   document.body.addEventListener('htmx:afterSwap', function () {
     convertUTCToLocalTime();
-  });
+
+    const textarea = document.querySelector('.textarea-hook');
+    if (textarea) {
+      adjustHeight(textarea);
+      textarea.addEventListener('input', function() {
+        adjustHeight(this);
+      });
+      textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          form = textarea.closest('form');
+          htmx.trigger(form, 'submit');
+        }
+      });
+    }
+});
+
+function adjustHeight(textarea) {
+  textarea.style.height = textarea.scrollHeight + 'px';
+}
 </script>

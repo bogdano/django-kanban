@@ -1,7 +1,7 @@
 {% load static %}
-<form class="add-item-form edit-item" hx-post="/update-item/{{ item.id }}/" hx-target="#kanban-board" hx-swap="outerHTML" role="group" data-item-id="{{ item.id }}" hx-on="htmx:load: focusForm({{ item.id }})">
-  <input type="text" name="content" required value="{{ item.content }}" id="edit-item-input-{{ item.id }}">
-  <button type="submit"><img class="form-button-img" src="{% static 'img/add_new.svg' %}"></button>
+<form class="add-item-form" hx-post="/update-item/{{ item.id }}/" hx-target="#kanban-board" hx-swap="outerHTML" data-item-id="{{ item.id }}" hx-on="htmx:load: focusForm({{ item.id }})">
+  <div class="textarea-container">
+    <textarea name="content" class="textarea-hook" required id="edit-item-input-{{ item.id }}">{{ item.content }}</textarea>
+    <button type="submit" class="edit-item-submit-button"><img class="form-button-img" src="{% static 'img/add_new.svg' %}"></button>
+  </div>
 </form>
-
-<!-- make it so that this form losing focus triggers HTMX to swap the form back with an item -->
