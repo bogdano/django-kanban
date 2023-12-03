@@ -123,11 +123,11 @@ def update_item_position(request):
     old_board = item.boardlist.get().list_type
 
     # shift order of items in boards
-    items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position).order_by('-order')
+    items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
       item_to_shift.save()
-    items_to_shift = BoardList.objects.get(list_type=new_board).items.filter(order__gte=new_position).order_by('-order')
+    items_to_shift = BoardList.objects.get(list_type=new_board).items.filter(order__gte=new_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order += 1
       item_to_shift.save()
@@ -164,11 +164,11 @@ def update_item_position_checked(request, pk):
     elif old_board == 'DONE':
       new_board = 'DOING'
 
-    new_position = BoardList.objects.get(list_type=new_board).items.count()+1
+    new_position = BoardList.objects.get(list_type=new_board).items.filter(archived=False).count()+1
     old_position = item.order
 
     # shift order of items in boards
-    items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position).order_by('-order')
+    items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
       item_to_shift.save()

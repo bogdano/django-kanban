@@ -3,7 +3,7 @@
   <input type="checkbox" {% if board_list.name == "Done" %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
   <span class="item-content">{{ item.order }} {{ item.content }}<span class="item-timestamp" data-utc="{{ item.last_updated|date:'c' }}"></span></span>
   <div class="item-overlay">
-    <span class="author-snippet">{{ item.author }}{% if item.updated_by != null %}<span>(edited)</span>{% else %}<span>(created)</span>{% endif %}</span>
+    <div class="author-snippet"><span>{{ item.author }}{% if item.updated_by != null %}<span>(edited)</span>{% else %}<span>(created)</span>{% endif %}</span></div>
     <button hx-swap="outerHTML" class="kanban-item-button" hx-get="/edit-item/{{ item.id }}/" hx-target="#item-{{ item.id }}"><img src="{% static 'img/edit.svg' %}"></button>
     <button hx-target="#kanban-board" hx-swap="innerHTML" class="kanban-item-button" hx-post="/delete-item/{{ item.id }}/"><img src="{% static 'img/trash.svg' %}"></button>
   </div>

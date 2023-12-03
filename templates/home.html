@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="title">看板</h1>
 {% if user.is_authenticated %}
   <div class="user-section">
     <div class="user-greeting">Hi {{ user.username }}! ({{ user.role }}).</div>
