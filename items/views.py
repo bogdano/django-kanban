@@ -31,7 +31,7 @@ def home_view(request):
 
   User = get_user_model()
   users = User.objects.all()
-  activities = Activity.objects.all().order_by('-timestamp')[:15]    
+  activities = Activity.objects.all().order_by('-timestamp')[:10]    
   board_lists = BoardList.objects.prefetch_related('items').all()
   for board_list in board_lists:
     board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -53,7 +53,7 @@ def create_item(request):
     board_list.items.add(item)
     Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board=board.upper())
 
-    activities = Activity.objects.all().order_by('-timestamp')[:15]
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -72,7 +72,7 @@ def delete_item(request, pk):
       item_to_shift.save(update_fields=['order'])
 
     Activity.objects.create(item=item, user=request.user, action='DELETED', source_board=item.boardlist.get().list_type, destination_board='')
-    activities = Activity.objects.all().order_by('-timestamp')[:15]
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -97,7 +97,7 @@ def update_item(request, pk):
       item.updated_by = request.user
       item.save()
       Activity.objects.create(item=item, user=request.user, action='UPDATED', source_board=item.boardlist.get().list_type, destination_board='')
-    activities = Activity.objects.all().order_by('-timestamp')[:15]
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -134,7 +134,7 @@ def update_item_position(request):
 
     if new_board != old_board:
       Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    activities = Activity.objects.all().order_by('-timestamp')[:15]
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')
@@ -175,7 +175,7 @@ def update_item_position_checked(request, pk):
     item.save()
 
     Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
-    activities = Activity.objects.all().order_by('-timestamp')[:15]
+    activities = Activity.objects.all().order_by('-timestamp')[:10]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
       board_list.ordered_items = board_list.items.filter(archived=False).order_by('-order')

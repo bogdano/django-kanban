@@ -236,9 +236,12 @@ footer {
 
 footer figure {
   text-align: center;
-} footer figcaption {
+  margin-right: 1.5rem;
+} 
+
+footer figcaption {
   font-size: 0.5rem;
-  margin-left: 1.5rem;
+  margin-left: 1rem;
 }
 
 .htmx-request {
