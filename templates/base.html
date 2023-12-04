@@ -12,11 +12,13 @@
     <script src="{% static 'js/Sortable.min.js' %}"></script>
   </head>
   <body hx-boost="true" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-    <main class="container-fluid">
+    <header>
       <h1 class="title">看板</h1>
       <div class="theme-switcher">
         🌘<input type="checkbox" class="switch" id="slider" data-theme-switcher="light" role="switch">☀️
       </div>
+    </header>
+    <main class="container-fluid">
       {% block content %}
       {% endblock content %}
     </main>
@@ -29,5 +31,13 @@
         themeSwitcher.schemeToLocalStorage()
       });
     </script>
+    <footer>
+      <figure>
+        <img src="{% static 'img/htmx.png' %}" alt="HTMX" width="100" height="100">
+        <figcaption>
+          <a href="https://htmx.org/" target="_blank" rel="noopener">htmx.org</a>
+        </figcaption>
+      </figure>
+    </footer>
   </body>
 </html>

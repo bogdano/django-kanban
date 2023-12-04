@@ -3,7 +3,6 @@ from .models import Item, BoardList, Activity
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView
 from django.views import View
-from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 # will need a view to capture sortable events and update boardlist models with new item order, and add and remove items
@@ -50,7 +49,7 @@ def create_item(request):
     board_list = BoardList.objects.get(list_type=board.upper())
     # Add the item to the board list
     order = board_list.items.filter(archived=False).count()+1
-    item = Item.objects.create(content=content, author=request.user, date_added=timezone.now(), order=order, last_updated=timezone.now())
+    item = Item.objects.create(content=content, author=request.user, order=order)
     board_list.items.add(item)
     Activity.objects.create(item=item, user=request.user, action='CREATED', source_board='', destination_board=board.upper())
 
@@ -70,7 +69,7 @@ def delete_item(request, pk):
     items_to_shift = item.boardlist.get().items.filter(order__gt=item.order, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
-      item_to_shift.save()
+      item_to_shift.save(update_fields=['order'])
 
     Activity.objects.create(item=item, user=request.user, action='DELETED', source_board=item.boardlist.get().list_type, destination_board='')
     activities = Activity.objects.all().order_by('-timestamp')[:15]
@@ -82,25 +81,18 @@ def delete_item(request, pk):
 def edit_item(request, pk):
   if request.method == 'GET':
     item = Item.objects.get(pk=pk)
-    context = {
-      'item': item
-    }
-    return render(request, 'partials/edit_item.html', context)
+    return render(request, 'partials/edit_item.html', {'item': item})
 
 def cancel_edit_item(request, pk):
   if request.method == 'GET':
     item = Item.objects.get(pk=pk)
-    context = {
-      'item': item
-    }
-    return render(request, 'partials/item.html', context)
+    return render(request, 'partials/item.html', {'item': item})
 
 def update_item(request, pk):
   if request.method == 'POST':
     item = Item.objects.get(pk=pk)
     content = request.POST.get('content')
     if item.content != content:
-      item.last_updated = timezone.now()
       item.content = content
       item.updated_by = request.user
       item.save()
@@ -126,22 +118,22 @@ def update_item_position(request):
     items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
-      item_to_shift.save()
+      item_to_shift.save(update_fields=['order'])
     items_to_shift = BoardList.objects.get(list_type=new_board).items.filter(order__gte=new_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order += 1
-      item_to_shift.save()
+      item_to_shift.save(update_fields=['order'])
 
     BoardList.objects.get(list_type=old_board).items.remove(item)
     item.order = new_position
     BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
       item.checked = True
-    item.last_updated = timezone.now()
     item.updated_by = request.user
     item.save()
 
-    Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
+    if new_board != old_board:
+      Activity.objects.create(item=item, user=request.user, action='MOVED', source_board=old_board, destination_board=new_board)
     activities = Activity.objects.all().order_by('-timestamp')[:15]
     board_lists = BoardList.objects.prefetch_related('items').all()
     for board_list in board_lists:
@@ -171,7 +163,7 @@ def update_item_position_checked(request, pk):
     items_to_shift = BoardList.objects.get(list_type=old_board).items.filter(order__gte=old_position, archived=False).order_by('-order')
     for item_to_shift in items_to_shift:
       item_to_shift.order -= 1
-      item_to_shift.save()
+      item_to_shift.save(update_fields=['order'])
 
     # remove item from boardlist
     BoardList.objects.get(list_type=old_board).items.remove(item)
@@ -179,7 +171,6 @@ def update_item_position_checked(request, pk):
     BoardList.objects.get(list_type=new_board).items.add(item)
     if new_board == 'DONE':
       item.checked = True
-    item.last_updated = timezone.now()
     item.updated_by = request.user
     item.save()
 

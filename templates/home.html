@@ -12,7 +12,7 @@
     <ul class="user-list-items">
       {% for user in users %}
         <li class="user-list-item">
-          <span class="user-list-item-username">{{ user.username }}</span>
+          <span class="user-list-item-username">{{ user.username }} </span><span style="font-size: 0.6rem;">({{ user.role }})</span>
         </li>
       {% endfor %}
     </ul>
