@@ -21,6 +21,8 @@ class Item(models.Model):
     order = models.IntegerField(default=0)
     # boolean to indicate if item is archived
     archived = models.BooleanField(default=False)
+    # a foreign key to the BoardList model
+    # boardlist = models.ForeignKey(BoardList, related_name='items', on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         if 'update_fields' in kwargs and kwargs['update_fields'] == ['order']:
@@ -31,10 +33,7 @@ class Item(models.Model):
         super(Item, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.content
-
-    def get_absolute_url(self):
-        return reverse("item_detail", kwargs={"pk": self.pk})
+        return self.content if len(self.content) < 100 else (self.content[:100] + '...')
     
 # this is a class for all the boards
 class BoardList(models.Model):

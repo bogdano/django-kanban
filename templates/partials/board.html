@@ -27,15 +27,15 @@
       filter: 'input,textarea', // 'undraggable' class is not draggable
       preventOnFilter: false, // Prevents sorting if trying to drag an undraggable element
       onEnd: function (evt) {
-          var item = evt.item
-          var item_id = item.id.split('-')[1]
-          var newBoardType = evt.to.dataset.boardType  // Assuming each list has a data-board-type attribute
-          var oldBoardType = evt.from.dataset.boardType
-          var newIndex = evt.newIndex
+          const item = evt.item
+          const item_id = item.id.split('-')[1]
+          const newBoardType = evt.to.dataset.boardType  // Assuming each list has a data-board-type attribute
+          const oldBoardType = evt.from.dataset.boardType
+          let newIndex = evt.newIndex
           // log number of siblings
           count = document.querySelectorAll('#' + newBoardType.toLowerCase() + '-list .kanban-item').length
           // create array of size count with numbers from count to 1
-          var arr = Array.from({length: count}, (_, i) => i + 1).reverse()
+          const arr = Array.from({length: count}, (_, i) => i + 1).reverse()
           newIndex = arr[newIndex-1]
           updateItemPosition(item_id, newBoardType, oldBoardType, newIndex)
         }
@@ -61,7 +61,7 @@
 
   document.querySelectorAll('.toggle-add-item-form').forEach(function(button) {
     button.addEventListener('click', function() {
-      var form = document.querySelector('#add-item-form-' + button.dataset.boardType)
+      const form = document.querySelector('#add-item-form-' + button.dataset.boardType)
       form.style.display = form.style.display === 'none' ? 'inline-flex' : 'none';
       textarea = form.querySelector('textarea[name="content"]')
       textarea.focus();
@@ -83,10 +83,11 @@
 
   function convertUTCToLocalTime() {
     document.querySelectorAll('.item-timestamp').forEach(function(span) {
-      var utcDate = span.getAttribute('data-utc');
-      var localDate = new Date(utcDate);
-      var today = new Date();
-      if (localDate.getDate() === today.getDate() && localDate.getMonth() == today.getMonth()) {
+      const utcDate = span.getAttribute('data-utc');
+      const localDate = new Date(utcDate);
+      const today = new Date();
+      const daysPassed = Math.floor((today - localDate) / (1000 * 60 * 60 * 24));
+      if (daysPassed < 1) {
         span.textContent = localDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true });
       } else {
         span.textContent = localDate.toLocaleString([], { month: '2-digit', day: '2-digit' });
