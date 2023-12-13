@@ -6,7 +6,7 @@
   </div>
   
   <div class="kanban-list {% if not board_list.ordered_items %}empty{% endif %}" id="{{ board_list.name|lower }}-list" data-board-type="{{ board_list.name }}">
-    <form class="add-item-form" style="display:none;" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML" role="group">
+    <form class="add-item-form" style="display:none;" id="add-item-form-{{ board_list.name }}" hx-post="{% url 'create_item' %}" hx-target="#kanban-board" hx-swap="outerHTML transition:true" role="group">
       <div class="textarea-container">
         <textarea name="content" required placeholder="New item"></textarea>
         <input type="hidden" name="board" value="{{ board_list.name }}">

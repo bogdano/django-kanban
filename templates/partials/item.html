@@ -1,6 +1,6 @@
 {% load static %}
 <div class="kanban-item" id="item-{{ item.id }}">
-  <input type="checkbox" {% if board_list.name == "Done" %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML">
+  <input type="checkbox" id="checkbox-{{ item.id }}" {% if board_list.name == "Done" %}checked{% endif %} hx-post="/update-item-position-checked/{{ item.id }}/" hx-target="#kanban-board" hx-swap="innerHTML transition:true">
   <span class="item-content">{{ item.content }}</span><span class="item-timestamp" data-utc="{{ item.last_updated|date:'c' }}"></span>
   <div class="item-overlay">
     <div class="author-snippet">
@@ -12,8 +12,8 @@
         <span>(edited)</span>
       {% endif %}
     </div>
-    <button hx-swap="outerHTML" class="kanban-item-button" hx-get="/edit-item/{{ item.id }}/" hx-target="#item-{{ item.id }}"><img src="{% static 'img/edit.svg' %}"></button>
-    <button hx-target="#kanban-board" hx-swap="innerHTML" class="kanban-item-button" hx-post="/delete-item/{{ item.id }}/"><img src="{% static 'img/trash.svg' %}"></button>
+    <button hx-swap="outerHTML transition:true" class="kanban-item-button edit-button" hx-get="/edit-item/{{ item.id }}/" hx-target="#item-{{ item.id }}"><img src="{% static 'img/edit.svg' %}"></button>
+    <button hx-target="#kanban-board" hx-swap="innerHTML transition:true" class="kanban-item-button" hx-post="/delete-item/{{ item.id }}/"><img src="{% static 'img/trash.svg' %}"></button>
   </div>
   <button id="hx-trigger-{{ item.boardlist.first.list_type }}" style="display: none;" hx-post="/update-item-position/" hx-swap="outerHTML" hx-target="#kanban-board"></button>
 </div>

@@ -43,18 +43,23 @@
   });
   
   function updateItemPosition(item, newBoardType, oldBoardType, newIndex) {
-    // Update the HTMX trigger with the correct POST URL and values
     const htmxTrigger = document.querySelector('#hx-trigger-' + oldBoardType.toUpperCase())
     htmxTrigger.setAttribute('hx-vals', '{"item_id": "' + item.toString() + '", "new_position": "' + newIndex.toString() + '", "new_board": "' + newBoardType.toUpperCase() + '"}');
-    // Trigger the HTMX request by simulating a click
     htmx.trigger(htmxTrigger, 'click');
   }
 
   function focusForm(id) {
+    const editButtons = document.querySelectorAll('.edit-button');
+    editButtons.forEach(function(button) {
+      button.disabled = true
+    });
     input = document.querySelector('#edit-item-input-' + id);
     input.select();
     form = input.closest('form');
     input.addEventListener('blur', function() {
+      editButtons.forEach(function(button) {
+        button.disabled = false
+      });
       htmx.trigger(form, 'submit');
     });
   }
@@ -119,6 +124,7 @@
   });
 
   function adjustHeight(textarea) {
+    textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
   }
 </script>

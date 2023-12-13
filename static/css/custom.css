@@ -198,6 +198,11 @@ footer {
   border-radius: 0.2rem 0 0.2rem 0;
 }
 
+.edit-button:disabled {
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+
 .toggle-add-item-form {
   margin-left: 1rem;
   padding: 0.1rem;

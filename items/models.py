@@ -66,7 +66,7 @@ class Activity(models.Model):
     # activity records which user moved, updated, or deleted an item
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # activity records which item was acted upon
-    item = models.ForeignKey(Item, on_delete=models.DO_NOTHING)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     # empty string which will store the name of the board from which an item was moved
     source_board = models.CharField(max_length=200)
     # empty string which will store the name of the board to which an item was moved
